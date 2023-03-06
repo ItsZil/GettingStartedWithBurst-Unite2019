@@ -214,7 +214,103 @@ public class BotManager : MonoBehaviour
 
         UnityEngine.Profiling.Profiler.BeginSample("Transform");
 
-#region Make A Temporary Array
+
+
+
+
+
+
+
+
+
+
+        #region Original transform
+        static void Transform(List<FactoryBot> bots, int count, ref Map.MapDataStore map)
+        {
+            int i, j;
+            for (i = 0; i < count; i++)
+            {
+                var bot1 = bots[i];
+                for (j = i + 1; j < count; j++)
+                {
+                    var bot2 = bots[j];
+                    if (bot2.position.x - bot2.radius > bot1.position.x + bot1.radius)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Vector2 delta = bot2.position - bot1.position;
+                        float dist = delta.magnitude;
+                        if (dist < bot1.radius + bot2.radius)
+                        {
+                            bot1.hitCount++;
+                            bot2.hitCount++;
+                            Vector2 moveVector = delta.normalized * (dist - (bot1.radius + bot2.radius)) * .4f;
+
+                            Vector2 moveVector1 = moveVector;
+                            Vector2 moveVector2 = -moveVector;
+
+                            Vector2Int newTile = new Vector2Int(Mathf.FloorToInt(bot1.position.x + moveVector1.x + .5f), Mathf.FloorToInt(bot1.position.y + .5f));
+                            if (map.IsInsideMap(newTile) == false)
+                            {
+                                moveVector1.x = 0f;
+                            }
+                            else if (map.IsWall(newTile))
+                            {
+                                moveVector1.x = 0f;
+                            }
+
+                            newTile = new Vector2Int(Mathf.FloorToInt(bot1.position.x + .5f), Mathf.FloorToInt(bot1.position.y + moveVector1.y + .5f));
+                            if (map.IsInsideMap(newTile) == false)
+                            {
+                                moveVector1.y = 0f;
+                            }
+                            else if (map.IsWall(newTile))
+                            {
+                                moveVector1.y = 0f;
+                            }
+
+
+                            newTile = new Vector2Int(Mathf.FloorToInt(bot2.position.x + moveVector2.x + .5f), Mathf.FloorToInt(bot2.position.y + .5f));
+                            if (map.IsInsideMap(newTile) == false)
+                            {
+                                moveVector2.x = 0f;
+                            }
+                            else if (map.IsWall(newTile))
+                            {
+                                moveVector2.x = 0f;
+                            }
+
+                            newTile = new Vector2Int(Mathf.FloorToInt(bot2.position.x + .5f), Mathf.FloorToInt(bot2.position.y + moveVector2.y + .5f));
+                            if (map.IsInsideMap(newTile) == false)
+                            {
+                                moveVector2.y = 0f;
+                            }
+                            else if (map.IsWall(newTile))
+                            {
+                                moveVector2.y = 0f;
+                            }
+
+                            bot1.position += moveVector1;
+                            bots[i] = bot1;
+                            bot2.position += moveVector2;
+                            bots[j] = bot2;
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
+
+
+
+
+
+
+
+        #region Make A Temporary Array
         var arrayOfBots = new NativeArray<BotValues>(bots.Count, Allocator.TempJob);
 #endregion
 
@@ -244,6 +340,8 @@ public class BotManager : MonoBehaviour
         arrayOfBots.Dispose();
 #endregion
 
+
+        
         UnityEngine.Profiling.Profiler.EndSample();
 
         UnityEngine.Profiling.Profiler.BeginSample("MatrixColor");
@@ -275,6 +373,8 @@ public class BotManager : MonoBehaviour
     }
 }
 
+
+
 #region Temporary Struct For Transform Job
 public struct BotValues
 {
@@ -287,15 +387,15 @@ public struct BotValues
 [BurstCompile]
 public struct BotManagerJob : IJob
 {
-#region Variables for our Job
+    #region Variables for our Job
     public Map.MapDataStore map;
     public NativeArray<BotValues> bots;
-#endregion
+    #endregion
 
     public void Execute()
     {
-#region The transform code
-        int i,j;
+        #region The transform code
+        int i, j;
         for (i = 0; i < bots.Length; i++)
         {
             var bot1 = bots[i];
@@ -368,6 +468,6 @@ public struct BotManagerJob : IJob
                 }
             }
         }
-#endregion
-   }
+        #endregion
+    }
 }
