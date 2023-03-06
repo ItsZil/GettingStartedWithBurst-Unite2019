@@ -4,6 +4,7 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Burst;
+using System;
 
 public class BotManager : MonoBehaviour
 {
@@ -29,7 +30,7 @@ public class BotManager : MonoBehaviour
 
     public void TrySpawnBot()
     {
-        Vector2Int tile = new Vector2Int(Random.Range(1, factory.mapWidth - 1), Random.Range(1, factory.mapHeight - 1));
+        Vector2Int tile = new Vector2Int(UnityEngine.Random.Range(1, factory.mapWidth - 1), UnityEngine.Random.Range(1, factory.mapHeight - 1));
         TrySpawnBot(tile);
     }
     public void TrySpawnBot(Vector2Int tile)
@@ -187,7 +188,7 @@ public class BotManager : MonoBehaviour
                                                 uv.y);
                     Vector2 moveVector = flow * botMoveSpeed * Time.deltaTime;
 
-                    moveVector += Random.insideUnitCircle * .002f;
+                    moveVector += UnityEngine.Random.insideUnitCircle * .002f;
 
                     Vector2Int newTile = new Vector2Int(Mathf.FloorToInt(bot.position.x + moveVector.x + .5f), Mathf.FloorToInt(bot.position.y + .5f));
                     if (factory.map.IsWall(newTile))
@@ -471,3 +472,17 @@ public struct BotManagerJob : IJob
         #endregion
     }
 }
+
+
+
+#region for inspector
+[BurstCompile]
+public static class MyAdd
+{
+    [BurstCompile]
+    public static UInt64 Add(UInt64 a, UInt64 b)
+    {
+        return a + b;
+    }
+}
+#endregion
